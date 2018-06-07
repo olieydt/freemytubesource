@@ -1,0 +1,35 @@
+{
+  "name": "FreeMyTube",
+  "short_name": "FreeMyTube",
+  "version": "0.0.5",
+  "manifest_version": 2,
+  "description": "",
+  "key": "",
+  "content_scripts" : [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["jquery.js","inject.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "scripts":["jquery.js", "background.js"],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+  "oauth2": {
+    "client_id": "",
+    "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+      "https://www.googleapis.com/auth/youtube.readonly",
+      "https://www.googleapis.com/auth/youtubepartner"
+    ]
+  },
+  "content_security_policy": "script-src 'self' https://apis.google.com/; object-src 'self'",
+  "permissions": [
+    "identity", "https://accounts.google.com/*"
+  ]
+}
