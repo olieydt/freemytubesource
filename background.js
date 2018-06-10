@@ -12,16 +12,15 @@ chrome.runtime.onMessage.addListener(
           //refresh arrays
           subscribedContent = [];
           //get subscribed channel ids
-          $.get('https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&mine=true&fields=items(snippet(channelTitle%2CresourceId%2FchannelId))' +
-              '&key=' + apiKey +
+          $.get('https://www.googleapis.com/youtube/v3/subscriptions?part=snippet&maxResults=50&mine=true&fields=items(snippet(channelTitle%2CresourceId%2FchannelId))%2CnextPageToken&key=' + apiKey +
               '&access_token=' + token, function(data){
               if(data){
                 var channelIds = [];
                 data.items.forEach(function(item){
                   channelIds.push(item.snippet.resourceId.channelId);
                 });
-                //async call
-                loopContent(data, channelIds, token, sendResponse);
+                //get next 50 subscriptions and their last videos
+                getNextSubscriptions(data.nextPageToken, token, channelIds, sendResponse);
               }
           });
         }
@@ -30,6 +29,27 @@ chrome.runtime.onMessage.addListener(
     //send response async so return true
     return true;
 });
+
+async function getNextSubscriptions(pageToken, token, channelIds, sendResponse){
+  if(!pageToken){
+    loopContent(channelIds, token, sendResponse);
+  } else{
+    $.get('https://www.googleapis.com/youtube/v3/subscriptions?pageToken=' + pageToken + '&part=snippet&maxResults=50&mine=true&fields=items(snippet(channelTitle%2CresourceId%2FchannelId))%2CnextPageToken&key=' + apiKey +
+              '&access_token=' + token, function(data){
+      if(data){
+        data.items.forEach(function(item){
+          channelIds.push(item.snippet.resourceId.channelId);
+        });
+        //get next 50 subscriptions
+        if(data.nextPageToken){
+          getNextSubscriptions(data.nextPageToken, token, channelIds);
+        } else{
+          loopContent(channelIds, token, sendResponse);
+        }
+      }
+    });
+  }
+}
 
 //reverse chronological
 function compare(a,b){
@@ -65,7 +85,10 @@ function asyncGetVideoInfo(ids){
         if(data){
           for (var i = 0; i < data.items.length; i++) {
             //get viewCount and format
-            var views = data.items[i].statistics.viewCount;
+            var views = 0;
+            if(data.items[i].statistics && data.items[i].statistics.viewCount){
+              views = data.items[i].statistics.viewCount;
+            }
             subscribedContent[i].viewCount = formatViews(views);
             //format duration
             var duration = data.items[i].contentDetails.duration;
@@ -168,9 +191,9 @@ function timeSince(date) {
     return Math.floor(seconds) + " second ago";
 }
 
-async function loopContent(data, channelIds, token, sendResponse){
+async function loopContent(channelIds, token, sendResponse){
   var videoIds = "";
-  for (var i = 0; i < data.items.length; i++) {
+  for (var i = 0; i < channelIds.length; i++) {
     await getSubscribedContent(i, channelIds[i], token);
   }
   //remove last ','
