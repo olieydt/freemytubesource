@@ -170,9 +170,12 @@ function timeSince(date) {
 
 async function loopContent(data, channelIds, token, sendResponse){
   var videoIds = "";
+debugger;
   for (var i = 0; i < data.items.length; i++) {
     await getSubscribedContent(i, channelIds[i], token);
+    debugger;
   }
+  debugger;
   //remove last ','
   var videoIds = "";
   subscribedContent.forEach(function(item){

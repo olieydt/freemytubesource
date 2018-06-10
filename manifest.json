@@ -1,10 +1,11 @@
 {
   "name": "FreeMyTube",
   "short_name": "FreeMyTube",
-  "version": "0.0.5",
+  "version": "0.1.1",
   "manifest_version": 2,
-  "description": "",
+  "description": "This extension adds your sub feed to the front page of Youtube.com. Relevant content is back.",
   "key": "",
+  "icons": {"16": "logo_16.png","32": "logo_32.png","128": "logo_128.png"},
   "content_scripts" : [
     {
       "matches": ["*://*.youtube.com/*"],
@@ -12,6 +13,7 @@
       "run_at": "document_start"
     }
   ],
+  "web_accessible_resources": ["logo_128.png"],
   "background": {
     "scripts":["jquery.js", "background.js"],
     "persistent": false
