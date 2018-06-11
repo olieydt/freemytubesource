@@ -231,28 +231,17 @@ function generatePanelHTML(callback){
 }
 
 function generateThumbnailItem(item) {
-  var channelTitle = item.channelTitle;
-  var channelId = item.channelId;
-  var duration = item.duration;
-  var publishedAt = item.publishedAt;
-  var thumbnailURL = item.thumbnailHigh.url;
-  var videoId = item.videoId;
-  var videoTitle = item.videoTitle;
-  var viewCount = item.viewCount;
-  var live = item.live;
-  var liveViewers = item.liveViewers;
-
   //live watching tag vs views and date
-  var HTMLviewDate = '<span class="view-count">' + viewCount + ' views</span> <span class="published-at">' + publishedAt + '</span> </div></div>';
-  var HTMLliveWatching = '<span>' + liveViewers + ' watching</span> </div></div>';
-  var HTMLPart1 = '<div class="thumbnail-item" style="display:none;width:210px;height: 204px;margin-right: 4px;margin-bottom: 24px;"><div style="width:210;position:relative;" ><a href="/watch?v='+videoId+'"><div style="background-color: transparent;width:210px;height:118px;overflow:hidden;white-space:nowrap;position:relative;"><img width="210" src="' + thumbnailURL + '" style="position:absolute;top:0px;bottom:0px;margin:auto;"></div>';
+  var HTMLviewDate = '<span class="view-count">' + item.viewCount + ' views</span> <span class="published-at">' + item.publishedAt + '</span> </div></div>';
+  var HTMLliveWatching = '<span>' + item.liveViewers + ' watching</span> </div></div>';
+  var HTMLPart1 = '<div class="thumbnail-item" style="display:none;width:210px;height: 204px;margin-right: 4px;margin-bottom: 24px;"><div style="width:210;position:relative;" ><a href="/watch?v='+item.videoId+'"><div style="background-color: transparent;width:210px;height:118px;overflow:hidden;white-space:nowrap;position:relative;"><img width="210" src="' + item.thumbnailHigh.url + '" style="position:absolute;top:0px;bottom:0px;margin:auto;"></div>';
   //this is the duration part (not for live video)
-  var HTMLPart2 = '<div class="duration-overlay" style="background-color:hsl(0, 0%, 6.7%);position:absolute;bottom:0;right:0;margin:4px;color:hsl(0, 0%, 100%);opacity:.8;padding:2px 4px;border-radius:2px;letter-spacing:.5px;font-size:1.2rem;font-weight:500;line-height:1.2rem;flex-direction:row;align-items: center; display:inline-flex;"><span>' + duration + '</span></div>';
-  var HTMLPart3 = '</a></div><div style="position: relative;cursor: pointer;display: flex;flex-direction: column;"> <h3 style="margin:8px 0 8px;"> <a href="/watch?v=' + videoId + '" title="' + videoTitle + '" style="display: -webkit-box;max-height: 3.2rem;-webkit-box-orient: vertical;overflow:hidden;text-overflow: ellipsis;white-space: normal;-webkit-line-clamp:2;font-size: 1.4rem;font-weight: 500;line-height: 1.6rem;cursor: pointer;text-decoration: none;color: rgb(17, 17, 17);">' + videoTitle + '</a> </h3> <div style="display: flex;flex-direction: column;"> <div style="max-width: 100%;max-height: 1.8rem;overflow: hidden;font-size: 1.3rem;font-weight: 400;line-height: 1.8rem;text-transform: none;flex-wrap: wrap;display: flex;flex-direction: row;align-items: center;"> <a class="channel-name" style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;margin-right: -0.1em;padding-right: 0.1em;text-decoration: none;" href="/channel/' + channelId + '">' + channelTitle + '</a> </div><div style="list-style-type: max-width:100%;color: rgba(17, 17, 17, 0.6);line-height: 1.8rem;max-height: 3.6rem;overflow: hidden;font-size: 1.3rem;font-weight: 400;text-transform: none;display: flex;flex-wrap: wrap;">';
+  var HTMLPart2 = '<div class="duration-overlay" style="background-color:hsl(0, 0%, 6.7%);position:absolute;bottom:0;right:0;margin:4px;color:hsl(0, 0%, 100%);opacity:.8;padding:2px 4px;border-radius:2px;letter-spacing:.5px;font-size:1.2rem;font-weight:500;line-height:1.2rem;flex-direction:row;align-items: center; display:inline-flex;"><span>' + item.duration + '</span></div>';
+  var HTMLPart3 = '</a></div><div style="position: relative;cursor: pointer;display: flex;flex-direction: column;"> <h3 style="margin:8px 0 8px;"> <a href="/watch?v=' + item.videoId + '" title="' + item.videoTitle + '" style="display: -webkit-box;max-height: 3.2rem;-webkit-box-orient: vertical;overflow:hidden;text-overflow: ellipsis;white-space: normal;-webkit-line-clamp:2;font-size: 1.4rem;font-weight: 500;line-height: 1.6rem;cursor: pointer;text-decoration: none;color: rgb(17, 17, 17);">' + item.videoTitle + '</a> </h3> <div style="display: flex;flex-direction: column;"> <div style="max-width: 100%;max-height: 1.8rem;overflow: hidden;font-size: 1.3rem;font-weight: 400;line-height: 1.8rem;text-transform: none;flex-wrap: wrap;display: flex;flex-direction: row;align-items: center;"> <a class="channel-name" style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;margin-right: -0.1em;padding-right: 0.1em;text-decoration: none;" href="/channel/' + item.channelId + '">' + item.channelTitle + '</a> </div><div style="list-style-type: max-width:100%;color: rgba(17, 17, 17, 0.6);line-height: 1.8rem;max-height: 3.6rem;overflow: hidden;font-size: 1.3rem;font-weight: 400;text-transform: none;display: flex;flex-wrap: wrap;">';
   //this is the live video part
   var HTMLPart4 = '<div> <div style="color:hsl(3, 81.8%, 49.6%);border:1px solid hsl(3, 81.8%, 49.6%);padding:2px 4px;font-size: 1.2rem;font-weight: 500;line-height: 1.2rem;white-space: nowrap;display: inline-block;border-radius: 2px;"> <span>LIVE NOW</span> </div></div>';
   var HTMLPart5 = '</div></div>';
-  if(!live) {
+  if(!item.live) {
     var thumbnailItem = HTMLPart1 + HTMLPart2 + HTMLPart3 + HTMLviewDate + HTMLPart5
   } else {
     var thumbnailItem = HTMLPart1 + HTMLPart3 + HTMLliveWatching + HTMLPart4 + HTMLPart5
