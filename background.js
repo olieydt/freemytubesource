@@ -91,33 +91,38 @@ function asyncGetVideoInfo(ids){
             }
             subscribedContent[i].viewCount = formatViews(views);
             //format duration
-            var duration = data.items[i].contentDetails.duration;
-            duration = duration.replace("PT", ":");
-            duration = duration.replace("H", ":");
-            duration = duration.replace("M", ":");
-            duration = duration.replace("S", "");
-            var newDuration = "";
-            duration.split(":").forEach(function(character){
-              if(character){
-                if(character < 10){
-                  newDuration = newDuration.concat("0");
+            if(data.items[i].contentDetails && data.items[i].contentDetails.duration){
+              var duration = data.items[i].contentDetails.duration;
+              duration = duration.replace("PT", ":");
+              duration = duration.replace("H", ":");
+              duration = duration.replace("M", ":");
+              duration = duration.replace("S", "");
+              var newDuration = "";
+              duration.split(":").forEach(function(character){
+                if(character){
+                  if(character < 10){
+                    newDuration = newDuration.concat("0");
+                  }
+                  newDuration = newDuration.concat(character, ":");
                 }
-                newDuration = newDuration.concat(character, ":");
+              });
+              //remove last :
+              newDuration = newDuration.substring(0, newDuration.lastIndexOf(":"));
+              //remove first 0, ex:05:31
+              if(newDuration.indexOf("0") == 0){
+                newDuration = newDuration.replace("0", "");
               }
-            });
-            //remove last :
-            newDuration = newDuration.substring(0, newDuration.lastIndexOf(":"));
-            //remove first 0, ex:05:31
-            if(newDuration.indexOf("0") == 0){
-              newDuration = newDuration.replace("0", "");
+              //if under 1min video add 0:
+              if(newDuration.indexOf(":") < 0){
+                newDuration = "0:".concat(newDuration);
+              }
+              subscribedContent[i].duration = newDuration;
+            } else{
+              subscribedContent[i].duration = 0;
             }
-            //if under 1min video add 0:
-            if(newDuration.indexOf(":") < 0){
-              newDuration = "0:".concat(newDuration);
-            }
-            subscribedContent[i].duration = newDuration;
+            
             //get live viewers
-            if(data.items[i].liveStreamingDetails){
+            if(data.items[i].liveStreamingDetails && data.items[i].liveStreamingDetails.concurrentViewers){
               subscribedContent[i].liveViewers = data.items[i].liveStreamingDetails.concurrentViewers;
             }
           }
@@ -255,13 +260,14 @@ function getSubscribedContent(i, channelId, token){
         '&access_token=' + token, function(data){
             if(data){
               data.items.forEach(function(item){
-                if(item.id){
+                var snippet = item.snippet;
+                if(item.id && item.id.videoId && snippet && snippet.publishedAt && snippet.liveBroadcastContent && snippet.title && snippet.channelTitle){
                   var date = new Date(item.snippet.publishedAt);
-                  var isLive = item.snippet.liveBroadcastContent != "none";
-                   subscribedContent.push({channelId:channelId, videoTitle:item.snippet.title, videoId:item.id.videoId, live:isLive, liveViewers:'0', channelTitle:item.snippet.channelTitle, publishedAt:date, viewCount:'', duration:'',
-                   thumbnailDefault:{url:item.snippet.thumbnails.default.url, height:item.snippet.thumbnails.default.height, width:item.snippet.thumbnails.default.width},
-                   thumbnailHigh:{url:item.snippet.thumbnails.high.url, height:item.snippet.thumbnails.high.height, width:item.snippet.thumbnails.high.width},
-                   thumbnailMedium:{url:item.snippet.thumbnails.medium.url, height:item.snippet.thumbnails.medium.height, width:item.snippet.thumbnails.medium.width}});
+                  var isLive = snippet.liveBroadcastContent != "none";
+                   subscribedContent.push({channelId:channelId, videoTitle:snippet.title, videoId:item.id.videoId, live:isLive, liveViewers:'0', channelTitle:snippet.channelTitle, publishedAt:date, viewCount:'', duration:'',
+                   thumbnailDefault:{url:snippet.thumbnails.default.url, height:snippet.thumbnails.default.height, width:snippet.thumbnails.default.width},
+                   thumbnailHigh:{url:snippet.thumbnails.high.url, height:snippet.thumbnails.high.height, width:snippet.thumbnails.high.width},
+                   thumbnailMedium:{url:snippet.thumbnails.medium.url, height:snippet.thumbnails.medium.height, width:snippet.thumbnails.medium.width}});
                 }
               });
               resolve(null);
