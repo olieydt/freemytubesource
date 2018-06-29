@@ -94,7 +94,7 @@ function formatViews(views){
   return views;
 }
 
-function asyncGetVideoInfo(ids){
+function asyncGetVideoInfo(ids, startIndex){
   return new Promise(function(resolve, reject){
     //sanity check, ensure 50 ids
     var idsArr = ids.split(",");
@@ -107,10 +107,10 @@ function asyncGetVideoInfo(ids){
           for (var i = 0; i < data.items.length; i++) {
             //get viewCount and format
             var views = 0;
-            if(data.items[i].statistics && data.items[i].statistics.viewCount){
+            if(data.items[i].statistics && data.items[i].statistics){
               views = data.items[i].statistics.viewCount;
             }
-            subscribedContent[i].viewCount = formatViews(views);
+            subscribedContent[startIndex].viewCount = formatViews(views);
             //format duration
             if(data.items[i].contentDetails && data.items[i].contentDetails.duration){
               var duration = data.items[i].contentDetails.duration;
@@ -137,15 +137,16 @@ function asyncGetVideoInfo(ids){
               if(newDuration.indexOf(":") < 0){
                 newDuration = "0:".concat(newDuration);
               }
-              subscribedContent[i].duration = newDuration;
+              subscribedContent[startIndex].duration = newDuration;
             } else{
-              subscribedContent[i].duration = 0;
+              subscribedContent[startIndex].duration = 0;
             }
             
             //get live viewers
-            if(data.items[i].liveStreamingDetails && data.items[i].liveStreamingDetails.concurrentViewers){
-              subscribedContent[i].liveViewers = data.items[i].liveStreamingDetails.concurrentViewers;
+            if(data.items[i].liveStreamingDetails){
+              subscribedContent[startIndex].liveViewers = data.items[i].liveStreamingDetails.concurrentViewers;
             }
+            startIndex++;
           }
           resolve(null);
         } else{
@@ -170,17 +171,20 @@ function nthIndex(str, pat, n){
 } 
 
 async function getVideoInfo(ids, callback){
+  var copyIds = ids.slice().split(",");
   var videoIds = ids.split(",");
   //max ids in query is 50
   var lastId = videoIds.length > 50 ? videoIds[49] : videoIds[videoIds.length-1];
   while(lastId){
     var indexOfLastElement = ids.indexOf(lastId) + lastId.length;
-    await asyncGetVideoInfo(ids.substring(0, indexOfLastElement)).catch(error => console.log(error));
+    var substringIds = ids.substring(0, indexOfLastElement);
+    var startIndex = copyIds.indexOf(substringIds.split(",")[0]);
+    await asyncGetVideoInfo(substringIds, startIndex).catch(error => console.log(error));
     //get start of next id after comma, +2
-    if(indexOfLastElement+2 >= ids.length){
+    if(indexOfLastElement+1 >= ids.length){
       break;
     }
-    ids = ids.substring(indexOfLastElement+2, ids.length);
+    ids = ids.substring(indexOfLastElement+1, ids.length);
     videoIds = ids.split(",");
     lastId = videoIds.length > 50 ? videoIds[49] : videoIds[videoIds.length-1];
   }
