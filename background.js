@@ -181,7 +181,8 @@ async function getVideoInfo(ids, callback){
       break;
     }
     ids = ids.substring(indexOfLastElement+2, ids.length);
-    lastId = ids.length > 50 ? videoIds[49] : videoIds[videoIds.length-1];
+    videoIds = ids.split(",");
+    lastId = videoIds.length > 50 ? videoIds[49] : videoIds[videoIds.length-1];
   }
   callback();
 }
