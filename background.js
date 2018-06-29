@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener(
     if(request.loaded){
       //start authentication
       chrome.identity.getAuthToken({ 'interactive': false }, function(token) {
-        if(chrome.runtime.lastError/*&& chrome.runtime.lastError.message == "The user is not signed in."*/){
+        if(chrome.runtime.lastError){
           //show panel with not logged in
           sendResponse({subscribedContent:null});
         } else if(token){
@@ -17,10 +17,14 @@ chrome.runtime.onMessage.addListener(
               if(data){
                 var channelIds = [];
                 data.items.forEach(function(item){
-                  channelIds.push(item.snippet.resourceId.channelId);
+                  if(item.snippet && item.snippet.resourceId && item.snippet.resourceId.channelId){
+                    channelIds.push(item.snippet.resourceId.channelId);
+                  }
                 });
                 //get next 50 subscriptions and their last videos
                 getNextSubscriptions(data.nextPageToken, token, channelIds, sendResponse);
+              } else{
+                sendResponse({subscribedContent:null});
               }
           });
         }
@@ -46,6 +50,8 @@ async function getNextSubscriptions(pageToken, token, channelIds, sendResponse){
         } else{
           loopContent(channelIds, token, sendResponse);
         }
+      } else{
+        loopContent(channelIds, token, sendResponse);
       }
     });
   }
@@ -146,14 +152,13 @@ function nthIndex(str, pat, n){
 async function getVideoInfo(ids, callback){
   var videoIds = ids.split(",");
   //max ids in query is 50
-  var pos = nthIndex(videoIds, ",", 50);
-  if(pos == -1){
-    pos = ids.length;
-  }
-  while(ids.length > 0){
-    shortVideoIds = ids.substring(0, pos);
-    ids = ids.substring(pos+1, ids.length);
-    await asyncGetVideoInfo(shortVideoIds);
+  var lastId = videoIds.length > 50 ? videoIds[49] : videoIds[videoIds.length-1];
+  while(lastId){
+    var indexOfLastElement = ids.indexOf(lastId) + lastId.length;
+    //get start of next id after comma, +2
+    ids = ids.substring(indexOfLastElement+2, ids.length);
+    await asyncGetVideoInfo(ids.substring(0, indexOfLastElement));
+    lastId = ids.split(",")[49];
   }
   callback();
 }
