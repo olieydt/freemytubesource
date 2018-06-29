@@ -26,6 +26,11 @@ chrome.runtime.onMessage.addListener(
               } else{
                 sendResponse({subscribedContent:null});
               }
+          }).fail(function(jqXHR, textStatus, errorThrown){
+            console.log(jqXHR);
+            console.log(textStatus);
+            console.log(errorThrown);
+            sendResponse({subscribedContent:null});
           });
         }
       });
@@ -53,6 +58,11 @@ async function getNextSubscriptions(pageToken, token, channelIds, sendResponse){
       } else{
         loopContent(channelIds, token, sendResponse);
       }
+    }).fail(function(jqXHR, textStatus, errorThrown){
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
+      loopContent(channelIds, token, sendResponse);
     });
   }
 }
@@ -86,6 +96,11 @@ function formatViews(views){
 
 function asyncGetVideoInfo(ids){
   return new Promise(function(resolve, reject){
+    //sanity check, ensure 50 ids
+    var idsArr = ids.split(",");
+    if(idsArr.length > 50){
+      ids = ids.substring(0, ids.indexOf(idsArr[49])+idsArr[49].length);
+    }
     $.get('https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Cstatistics%2CliveStreamingDetails&id=' + ids + 
       '&fields=items(contentDetails%2Fduration%2CliveStreamingDetails%2FconcurrentViewers%2Cstatistics%2FviewCount)&key=' + apiKey, function(data){
         if(data){
@@ -136,6 +151,11 @@ function asyncGetVideoInfo(ids){
         } else{
           reject(null);
         }
+    }).fail(function(jqXHR, textStatus, errorThrown){
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown);
+      reject(null);
     });
   });
 }
@@ -155,7 +175,7 @@ async function getVideoInfo(ids, callback){
   var lastId = videoIds.length > 50 ? videoIds[49] : videoIds[videoIds.length-1];
   while(lastId){
     var indexOfLastElement = ids.indexOf(lastId) + lastId.length;
-    await asyncGetVideoInfo(ids.substring(0, indexOfLastElement));
+    await asyncGetVideoInfo(ids.substring(0, indexOfLastElement)).catch(error => console.log(error));
     //get start of next id after comma, +2
     if(indexOfLastElement+2 >= ids.length){
       break;
@@ -207,7 +227,7 @@ function timeSince(date) {
 async function loopContent(channelIds, token, sendResponse){
   var videoIds = "";
   for (var i = 0; i < channelIds.length; i++) {
-    await getSubscribedContent(i, channelIds[i], token);
+    await getSubscribedContent(i, channelIds[i], token).catch(error => console.log(error));
   }
   //remove last ','
   var videoIds = "";
@@ -264,7 +284,7 @@ function generateThumbnailItem(item) {
 
 function getSubscribedContent(i, channelId, token){
   return new Promise(function(resolve, reject){
-    $.get('https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + channelId + '&order=date&fields=items(id%2FvideoId%2Csnippet(channelTitle%2CliveBroadcastContent%2CpublishedAt%2Cthumbnails(default%2Chigh%2Cmedium)%2Ctitle))&key=' + apiKey +
+    $.get('https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + channelId + '&order=date&maxResults=3&fields=items(id%2FvideoId%2Csnippet(channelTitle%2CliveBroadcastContent%2CpublishedAt%2Cthumbnails(default%2Chigh%2Cmedium)%2Ctitle))&key=' + apiKey +
         '&access_token=' + token, function(data){
             if(data){
               data.items.forEach(function(item){
@@ -282,6 +302,11 @@ function getSubscribedContent(i, channelId, token){
             } else{
               reject(null);
             }
+        }).fail(function(jqXHR, textStatus, errorThrown){
+          console.log(jqXHR);
+          console.log(textStatus);
+          console.log(errorThrown);
+          reject(null);
         });
   });
 };
