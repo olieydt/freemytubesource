@@ -155,10 +155,13 @@ async function getVideoInfo(ids, callback){
   var lastId = videoIds.length > 50 ? videoIds[49] : videoIds[videoIds.length-1];
   while(lastId){
     var indexOfLastElement = ids.indexOf(lastId) + lastId.length;
-    //get start of next id after comma, +2
-    ids = ids.substring(indexOfLastElement+2, ids.length);
     await asyncGetVideoInfo(ids.substring(0, indexOfLastElement));
-    lastId = ids.split(",")[49];
+    //get start of next id after comma, +2
+    if(indexOfLastElement+2 >= ids.length){
+      break;
+    }
+    ids = ids.substring(indexOfLastElement+2, ids.length);
+    lastId = ids.length > 50 ? videoIds[49] : videoIds[videoIds.length-1];
   }
   callback();
 }
